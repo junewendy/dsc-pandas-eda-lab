@@ -94,6 +94,9 @@ And set `%matplotlib inline` so the graphs will display immediately below the ce
 
 ```python
 # Your code here
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib inline
 ```
 
 Now, use pandas to open the file located at `data/ames.csv` ([documentation here](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)). Specify the argument `index_col=0` in order to avoid creating an extra `Id` column. Name the resulting dataframe `df`.
@@ -101,6 +104,7 @@ Now, use pandas to open the file located at `data/ames.csv` ([documentation here
 
 ```python
 # Your code here
+df = pd.read_csv('data/ames.csv', index_col=0)
 ```
 
 The following code checks that you loaded the data correctly:
@@ -147,6 +151,12 @@ In the cell below, produce a histogram for `SalePrice`.
 
 ```python
 # Your code here
+
+df['SalePrice'].plot.hist(bins=30, edgecolor='black', figsize=(8,5), title='Sale Price Distribution')
+plt.axvline(df['SalePrice'].mean(), color='black', linestyle='--')
+plt.xlabel('Sale Price')
+plt.ylabel('Frequency')
+plt.show()
 ```
 
 Now, print out the mean, median, and standard deviation:
@@ -154,6 +164,7 @@ Now, print out the mean, median, and standard deviation:
 
 ```python
 # Your code here
+df['SalePrice'].mean(), df['SalePrice'].median(), df['SalePrice'].std()
 ```
 
 In the cell below, interpret the above information.
@@ -162,7 +173,7 @@ In the cell below, interpret the above information.
 ```python
 # Replace None with appropriate text
 """
-None
+The variability is high
 """
 ```
 
@@ -173,6 +184,11 @@ In the cell below, produce a histogram for `TotRmsAbvGrd`.
 
 ```python
 # Your code here
+df['TotRmsAbvGrd'].plot.hist(bins=30, edgecolor='black', figsize=(8,5), title='TotRmsAbvGrdn')
+plt.axvline(df['TotRmsAbvGrd'].mean(), color='black', linestyle='--')
+plt.xlabel('TotRmsAbvGrd')
+plt.ylabel('Frequency')
+plt.show()
 
 ```
 
@@ -181,6 +197,7 @@ Now, print out the mean, median, and standard deviation:
 
 ```python
 # Your code here
+df['TotRmsAbvGrd'].mean(), df['TotRmsAbvGrd'].median(), df['TotRmsAbvGrd'].std()
 ```
 
 In the cell below, interpret the above information.
@@ -189,7 +206,7 @@ In the cell below, interpret the above information.
 ```python
 # Replace None with appropriate text
 """
-None
+The distribution is slightly right-skewed
 """
 ```
 
@@ -200,6 +217,11 @@ In the cell below, produce a histogram for `OverallCond`.
 
 ```python
 # Your code here
+df['OverallCond'].plot.hist(bins=9, edgecolor='black', figsize=(8,5), title='OverallCond')
+plt.axvline(df['OverallCond'].mean(), color='black', linestyle='--')
+plt.xlabel('OverallCond')
+plt.ylabel('Frequency')
+plt.show()
 ```
 
 Now, print out the mean, median, and standard deviation:
@@ -207,6 +229,7 @@ Now, print out the mean, median, and standard deviation:
 
 ```python
 # Your code here
+df['OverallCond'].mean(), df['OverallCond'].median(), df['OverallCond'].std()
 ```
 
 In the cell below, interpret the above information.
@@ -215,7 +238,7 @@ In the cell below, interpret the above information.
 ```python
 # Replace None with appropriate text
 """
-None
+The distribution is slightly right-skewed
 """
 ```
 
@@ -234,9 +257,9 @@ In the cell below, create three variables, each of which represents a record-wis
 
 ```python
 # Replace None with appropriate code
-below_average_condition = None
-average_condition = None
-above_average_condition = None
+below_average_condition = df[df['OverallCond'] < 5]
+average_condition = df[df['OverallCond'] == 5]
+above_average_condition = df[df['OverallCond'] > 5]
 ```
 
 The following code checks that you created the subsets correctly:
@@ -305,7 +328,8 @@ Interpret the plot above. What does it tell us about these overall condition cat
 ```python
 # Replace None with appropriate text
 """
-None
+The lower the price the higher the demand for the house irrespective of the condition of the house
+"""
 """
 ```
 
@@ -322,6 +346,7 @@ You can import additional libraries, although it is possible to do this just usi
 
 ```python
 # Your code here
+df.select_dtypes(include='number').corr()['SalePrice'].drop('SalePrice').sort_values(ascending=False).head(1)
 ```
 
 Now, find the ***most negatively correlated*** column:
@@ -329,6 +354,7 @@ Now, find the ***most negatively correlated*** column:
 
 ```python
 # Your code here
+df.select_dtypes(include='number').corr()['SalePrice'].drop('SalePrice').sort_values().head(1)
 ```
 
 Once you have your answer, edit the code below so that it produces a box plot of the relevant columns.
@@ -336,31 +362,40 @@ Once you have your answer, edit the code below so that it produces a box plot of
 
 ```python
 # Replace None with appropriate code
-
 import seaborn as sns
+import matplotlib.pyplot as plt
 
+# Find the column names most positively and negatively correlated with SalePrice
+most_positive = df.select_dtypes(include='number').corr()['SalePrice'].drop('SalePrice').sort_values(ascending=False).head(1).index[0]
+most_negative = df.select_dtypes(include='number').corr()['SalePrice'].drop('SalePrice').sort_values().head(1).index[0]
+
+# Create a figure with two subplots side by side
 fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(15,5))
-
-# Plot distribution of column with highest correlation
+# Plot boxplot of SalePrice grouped by the most positively correlated feature
 sns.boxplot(
-    x=None,
+    x=df[most_positive],   # Pass actual data, not just the column name string
     y=df["SalePrice"],
     ax=ax1
 )
-# Plot distribution of column with most negative correlation
+
+# Plot boxplot of SalePrice grouped by the most negatively correlated feature
 sns.boxplot(
-    x=None,
+    x=df[most_negative],   # Pass actual data
     y=df["SalePrice"],
     ax=ax2
 )
-
-# Customize labels
-ax1.set_title(None)
-ax1.set_xlabel(None)
+# Set titles and labels for the first plot
+ax1.set_title(f"Sale Price vs {most_positive}")
+ax1.set_xlabel(most_positive)
 ax1.set_ylabel("Sale Price")
-ax2.set_title(None)
-ax2.set_xlabel(None)
-ax2.set_ylabel("Sale Price");
+
+# Set titles and labels for the second plot
+ax2.set_title(f"Sale Price vs {most_negative}")
+ax2.set_xlabel(most_negative)
+ax2.set_ylabel("Sale Price")
+
+plt.show()
+
 ```
 
 Interpret the results below. Consult `data/data_description.txt` as needed.
@@ -369,7 +404,7 @@ Interpret the results below. Consult `data/data_description.txt` as needed.
 ```python
 # Replace None with appropriate text
 """
-None
+We have outliers
 """
 ```
 
@@ -410,7 +445,7 @@ Interpret this plot below:
 ```python
 # Replace None with appropriate text
 """
-None
+The older the age of the home the lower the sale price and vice versa
 """
 ```
 
