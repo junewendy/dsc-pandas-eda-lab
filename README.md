@@ -173,6 +173,7 @@ In the cell below, produce a histogram for `TotRmsAbvGrd`.
 
 ```python
 # Your code here
+
 ```
 
 Now, print out the mean, median, and standard deviation:
